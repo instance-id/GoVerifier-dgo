@@ -3,11 +3,11 @@ package cmdroutes
 import (
 	"bytes"
 
-	"github.com/sarulabs/di"
+	"github.com/instance-id/GoVerifier-dgo/appconfig"
+
+	"github.com/sarulabs/di/v2"
 
 	log "github.com/sirupsen/logrus"
-
-	"github.com/instance-id/GoVerifier/verif/appconfig"
 
 	"github.com/bwmarrin/discordgo"
 
@@ -27,12 +27,12 @@ func (p *ListRoles) Handle(ctx *exrouter.Context) {
 
 	guildObject, err := p.di.SafeGet("configData")
 	if err != nil {
-		log.Fatalf("Erroorrrrrrr", err)
+		log.Fatalf("Erroorrrrrrr: %s", err)
 	}
 	if guild, ok := guildObject.(*appconfig.MainSettings); ok {
 		log.Infof("GuildID: %s", guild.Discord.Guild)
 	} else {
-		log.Fatalf("Shoot.. borked", err)
+		log.Fatalf("Shoot.. borked: %s", err)
 	}
 
 	guildRoles, err := ctx.Ses.GuildRoles(p.di.Get("configData").(*appconfig.MainSettings).Discord.Guild)
@@ -41,7 +41,7 @@ func (p *ListRoles) Handle(ctx *exrouter.Context) {
 	}
 
 	roleTable := p.renderMarkDownTable(guildRoles)
-	_, err = ctx.Reply(roleTable)
+	_, err = ctx.Reply("```" + roleTable + "```")
 	if err != nil {
 		log.Print("Something went wrong when handling listroles request", err)
 	}
@@ -59,14 +59,14 @@ func (p ListRoles) renderMarkDownTable(guildroles discordgo.Roles) string {
 	var tableData [][]string
 
 	for _, v := range guildroles {
-		row := []string{v.Name}
+		row := []string{v.Name, v.ID}
 		tableData = append(tableData, row)
 	}
 
 	buffer := new(bytes.Buffer)
 
 	table := tablewriter.NewWriter(buffer)
-	table.SetHeader([]string{"Command Name:"})
+	table.SetHeader([]string{"Role Name:", "Role ID:"})
 	table.SetColWidth(40)
 	table.SetBorders(tablewriter.Border{Left: true, Top: false, Right: true, Bottom: false})
 	table.SetCenterSeparator("|")

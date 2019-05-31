@@ -3,6 +3,8 @@ package components
 import (
 	"os"
 
+	"github.com/instance-id/GoVerifier-dgo/cache"
+
 	"github.com/kz/discordrus"
 
 	"fmt"
@@ -10,7 +12,6 @@ import (
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
-	"github.com/instance-id/GoVerifier/cache"
 	"github.com/sirupsen/logrus"
 	prefixed "github.com/x-cray/logrus-prefixed-formatter"
 )

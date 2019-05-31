@@ -5,11 +5,11 @@ import (
 	"log"
 
 	"github.com/bwmarrin/discordgo"
-	"github.com/sarulabs/di"
+	"github.com/sarulabs/di/v2"
 
+	"github.com/Necroforger/dgrouter/exrouter"
 	"github.com/instance-id/GoVerifier-dgo/appconfig"
-	cmdroutes2 "github.com/instance-id/GoVerifier-dgo/cmdroutes"
-	"github.com/instance-id/dgrouter/exrouter"
+	"github.com/instance-id/GoVerifier-dgo/verifier/cmdroutes"
 )
 
 //
@@ -23,14 +23,14 @@ type Config struct {
 	Settings *appconfig.MainSettings
 	di       di.Container
 	Session  *discordgo.Session
-	Routes   []cmdroutes2.Route
+	Routes   []cmdroutes.Route
 	botId    string
 }
 
-func (vc *Config) registerRoutes(di di.Container, session *discordgo.Session, Routes ...cmdroutes2.Route) {
+func (vc *Config) registerRoutes(di di.Container, session *discordgo.Session, Routes ...cmdroutes.Route) {
 	router := exrouter.New()
 
-	cmdroutes2.RegisterRoutes(
+	cmdroutes.RegisterRoutes(
 		router,
 		Routes...,
 	)
@@ -70,13 +70,14 @@ func (v *Verifier) VerifierRun(s *appconfig.MainSettings, di di.Container) (*Con
 	settings := &Config{Settings: s,
 		Session: session,
 		di:      di,
-		Routes: []cmdroutes2.Route{
-			cmdroutes2.NewSubRoute(di),
-			cmdroutes2.NewUser(di),
-			cmdroutes2.NewDirectMessage(),
-			cmdroutes2.NewAvatar(),
-			cmdroutes2.NewPing(),
-			cmdroutes2.NewListRoles(di)}}
+		Routes: []cmdroutes.Route{
+			cmdroutes.NewSubRoute(di),
+			cmdroutes.NewUser(di),
+			cmdroutes.NewDirectMessage(),
+			cmdroutes.NewAvatar(),
+			cmdroutes.NewPing(),
+			cmdroutes.NewListRoles(di),
+			cmdroutes.NewEnsure(di)}}
 
 	var logLevel int
 	switch settings.Settings.System.ConsoleLogLevel {

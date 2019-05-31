@@ -3,7 +3,7 @@ package cmdroutes
 import (
 	"log"
 
-	"github.com/sarulabs/di"
+	"github.com/sarulabs/di/v2"
 
 	"github.com/Necroforger/dgrouter"
 	"github.com/Necroforger/dgrouter/exrouter"

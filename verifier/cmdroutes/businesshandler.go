@@ -1,6 +1,8 @@
 package cmdroutes
 
 import (
+	"log"
+
 	"github.com/Necroforger/dgrouter/exrouter"
 )
 
@@ -54,7 +56,7 @@ func RegisterRoutes(router *exrouter.Route, routes ...Route) {
 				}
 			}
 		}
-		// log.Printf("Handlers registered: %s", route.GetCommand())
+		log.Printf("Handlers registered: %s", route.GetCommand())
 	}
 
 }

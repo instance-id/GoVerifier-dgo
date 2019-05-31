@@ -7,11 +7,12 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/instance-id/GoVerifier-dgo/appconfig"
+
 	"github.com/bwmarrin/discordgo"
 	"github.com/sarulabs/di/v2"
 	"go.uber.org/zap"
 
-	 "github.com/instance-id/GoVerifier-dgo/appconfig"
 	"github.com/instance-id/GoVerifier-dgo/logging"
 	"github.com/instance-id/GoVerifier-dgo/services"
 	"github.com/instance-id/GoVerifier-dgo/verifier"
@@ -53,13 +54,13 @@ func main() {
 	defer app.Delete()
 
 	guildObject, err := app.SafeGet("configData")
-	if guild, ok := guildObject.(*MainSettings); ok {
-		log.Sugar().Info("GuildID: s%", guild.Discord.Guild)
+	if guild, ok := guildObject.(*appconfig.MainSettings); ok {
+		log.Sugar().Infof("GuildID: %s", guild.Discord.Guild)
 	} else {
 		log.Sugar().Infof("Token: %s", guild.Discord.Guild)
 	}
 
-	verifierRun, err := appContext.Verifier.VerifierRun(app.Get("configData").(*MainSettings), app)
+	verifierRun, err := appContext.Verifier.VerifierRun(app.Get("configData").(*appconfig.MainSettings), app)
 	if err != nil {
 		log.Sugar().Fatalf("error creating Bot session,", err)
 	}

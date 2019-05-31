@@ -1,8 +1,8 @@
 package appconfig
 
 import (
-	"github.com/gookit/config"
-	"github.com/gookit/config/yaml"
+	"github.com/gookit/config/v2"
+	"github.com/gookit/config/v2/yaml"
 )
 
 type ConfigData struct {
