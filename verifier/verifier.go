@@ -77,7 +77,10 @@ func (v *Verifier) VerifierRun(s *appconfig.MainSettings, di di.Container) (*Con
 			cmdroutes.NewAvatar(),
 			cmdroutes.NewPing(),
 			cmdroutes.NewListRoles(di),
-			cmdroutes.NewEnsure(di)}}
+			cmdroutes.NewDbSetup(di),
+			cmdroutes.NewDbUpdate(di),
+			cmdroutes.NewVerify(di),
+			cmdroutes.NewAddUser(di)}}
 
 	var logLevel int
 	switch settings.Settings.System.ConsoleLogLevel {
@@ -122,7 +125,7 @@ func (vc *Config) Close() error {
 }
 
 func ready(s *discordgo.Session, event *discordgo.Ready) {
-	log.Println("Verfier is now running. Press Ctrl + C to close session.")
+	log.Println("Verifier is now running. Press Ctrl + C to close session.")
 }
 
 //// Handle discord messages

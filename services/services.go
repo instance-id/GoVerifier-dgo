@@ -33,7 +33,6 @@ var Services = []di.Def{
 			var conn components.DbConfig
 			dbconfig := db.GetDbConfig()
 			dbConn := conn.ConnectDB(dbconfig)
-			fmt.Printf("Data From DI %s", dbConn.Db.Data.Address)
 			return dbConn, nil
 		},
 		Close: func(obj interface{}) error {

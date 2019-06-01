@@ -3,5 +3,5 @@ data:
   address: 'instance.id'
   username: 'instance'
   password: '!WE2er#$'
-  dbname: 'verify'
+  dbname: 'verifier'
   tableprefix: ''

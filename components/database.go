@@ -3,12 +3,10 @@ package components
 import (
 	"fmt"
 
-	"github.com/sirupsen/logrus"
-
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/go-xorm/xorm"
 	"github.com/instance-id/GoVerifier-dgo/appconfig"
-	"github.com/instance-id/GoVerifier-dgo/models"
+	"github.com/sirupsen/logrus"
 )
 
 type DbConfig struct {
@@ -41,28 +39,6 @@ func (xdb *DbConfig) ConnectDB(d *appconfig.DbSettings) *DbConfig {
 	return dbConfig
 }
 
-func DetermineConnection(d *appconfig.DbSettings) string {
-	var connString string
-	switch d.Database {
-	case "mysql":
-		connString = fmt.Sprintf("%s:%s@tcp(%s:3306)/%s?charset=utf8", d.Data.Username, d.Data.Password, d.Data.Address, d.Data.DbName)
-	case "mssql":
-		connString = fmt.Sprintf("server=%s;user id=%s;password=%s;database=%s", d.Data.Address, d.Data.Username, d.Data.Password, d.Data.DbName)
-	case "postgres":
-		connString = fmt.Sprintf("%s:%s@%s:5432/%s?sslmode=disable", d.Data.Username, d.Data.Password, d.Data.Address, d.Data.DbName)
-	case "sqlite":
-		connString = fmt.Sprintf("%s:%s@%s:5432/%s?sslmode=disable", d.Data.Username, d.Data.Password, d.Data.Address, d.Data.DbName)
-	}
-	return connString
-}
-
-func (x *XormDB) Ensure() (err error) {
-	// ensure underlying xorm engine
-	err = x.Engine.Sync(new(models.ValidatedUsers))
-	err = x.Engine.Sync(new(models.Packages))
-	return
-}
-
 func (x *XormDB) Run() {
 	for x.dbChnl != nil {
 		ev, ok := <-x.dbChnl
@@ -84,6 +60,37 @@ func (x *XormDB) Close() (err error) {
 	err = <-x.closeWorker
 	close(x.closeWorker)
 	return
+}
+
+func DetermineConnection(d *appconfig.DbSettings) string {
+	var connString string
+	switch d.Database {
+	case "mysql":
+		connString = fmt.Sprintf("%s:%s@tcp(%s:3306)/%s?charset=utf8",
+			d.Data.Username,
+			d.Data.Password,
+			d.Data.Address,
+			d.Data.DbName)
+	case "mssql":
+		connString = fmt.Sprintf("server=%s;user id=%s;password=%s;database=%s",
+			d.Data.Address,
+			d.Data.Username,
+			d.Data.Password,
+			d.Data.DbName)
+	case "postgres":
+		connString = fmt.Sprintf("%s:%s@%s:5432/%s?sslmode=disable",
+			d.Data.Username,
+			d.Data.Password,
+			d.Data.Address,
+			d.Data.DbName)
+	case "sqlite":
+		connString = fmt.Sprintf("%s:%s@%s:5432/%s?sslmode=disable",
+			d.Data.Username,
+			d.Data.Password,
+			d.Data.Address,
+			d.Data.DbName)
+	}
+	return connString
 }
 
 // xorm reverse mysql instance:!WE2er#$@tcp(instance.id:3306)/verify?charset=utf8 templates/goxorm

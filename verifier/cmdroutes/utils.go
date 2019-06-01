@@ -1,4 +1,4 @@
-package components
+package cmdroutes
 
 import "github.com/sirupsen/logrus"
 

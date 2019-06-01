@@ -29,7 +29,7 @@ var (
 func main() {
 	var appContext appContext
 
-	log, err := logging.NewLogger(
+	logger, err := logging.NewLogger(
 		logging.DevelopmentEnvironment,
 		service,
 		"",
@@ -39,12 +39,16 @@ func main() {
 
 	func(log *zap.Logger) {
 		discordgo.Logger = logging.DiscordgoLogger(log.With(zap.String("feature", "discordgo")))
-	}(log)
+	}(logger)
 
 	builder, err := di.NewBuilder()
 	if err != nil {
-		log.Fatal(err.Error())
+		logger.Fatal(err.Error())
 	}
+
+	log := logger.Sugar()
+
+	log.Infof("Log type: %t", log)
 
 	err = builder.Add(services.Services...)
 	if err != nil {
@@ -55,20 +59,20 @@ func main() {
 
 	guildObject, err := app.SafeGet("configData")
 	if guild, ok := guildObject.(*appconfig.MainSettings); ok {
-		log.Sugar().Infof("GuildID: %s", guild.Discord.Guild)
+		log.Infof("GuildID: %s", guild.Discord.Guild)
 	} else {
-		log.Sugar().Infof("Token: %s", guild.Discord.Guild)
+		log.Infof("Token: %s", guild.Discord.Guild)
 	}
 
 	verifierRun, err := appContext.Verifier.VerifierRun(app.Get("configData").(*appconfig.MainSettings), app)
 	if err != nil {
-		log.Sugar().Fatalf("error creating Bot session,", err)
+		log.Fatalf("error creating Bot session,", err)
 	}
 
 	defer verifierRun.Close()
 	err = verifierRun.Start()
 	if err != nil {
-		log.Sugar().Fatalf("Couldn't start verifierRun: %v", err)
+		log.Fatalf("Couldn't start verifierRun: %v", err)
 		return
 	}
 
