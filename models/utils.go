@@ -1,10 +1,6 @@
-package components
+package models
 
 import "github.com/sirupsen/logrus"
-
-func TrimInvoice(invoice string) {
-
-}
 
 func ErrCheckf(msg string, err error) {
 	if err != nil {

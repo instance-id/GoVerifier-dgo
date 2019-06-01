@@ -8,7 +8,6 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/go-xorm/xorm"
 	"github.com/instance-id/GoVerifier-dgo/appconfig"
-	"github.com/instance-id/GoVerifier-dgo/models"
 )
 
 type DbConfig struct {
@@ -54,13 +53,6 @@ func DetermineConnection(d *appconfig.DbSettings) string {
 		connString = fmt.Sprintf("%s:%s@%s:5432/%s?sslmode=disable", d.Data.Username, d.Data.Password, d.Data.Address, d.Data.DbName)
 	}
 	return connString
-}
-
-func (x *XormDB) Ensure() (err error) {
-	// ensure underlying xorm engine
-	err = x.Engine.Sync(new(models.ValidatedUsers))
-	err = x.Engine.Sync(new(models.Packages))
-	return
 }
 
 func (x *XormDB) Run() {
