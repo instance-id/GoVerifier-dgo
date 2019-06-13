@@ -1,9 +1,8 @@
 package cmdroutes
 
 import (
-	"log"
-
 	"github.com/Necroforger/dgrouter/exrouter"
+	. "github.com/instance-id/GoVerifier-dgo/utils"
 )
 
 const avatarRoute = "avatar"
@@ -21,9 +20,7 @@ func (a *Avatar) GetCommand() string {
 
 func (a *Avatar) Handle(ctx *exrouter.Context) {
 	_, err := ctx.Reply(ctx.Msg.Author.AvatarURL("2048"))
-	if err != nil {
-		log.Print("Something went wrong when handling Avatar request", err)
-	}
+	LogFatalf("Something went wrong when handling Avatar request: ", err)
 }
 
 func NewAvatar() *Avatar {

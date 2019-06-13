@@ -1,19 +1,16 @@
 package main
 
 import (
-	"net/http"
+	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 
 	"github.com/instance-id/GoVerifier-dgo/appconfig"
 
-	"github.com/bwmarrin/discordgo"
 	"github.com/sarulabs/di/v2"
 	"go.uber.org/zap"
 
-	"github.com/instance-id/GoVerifier-dgo/logging"
 	"github.com/instance-id/GoVerifier-dgo/services"
 	"github.com/instance-id/GoVerifier-dgo/verifier"
 )
@@ -22,61 +19,50 @@ type appContext struct {
 	Verifier *verifier.Verifier
 }
 
-var (
-	service = "Verifier"
-)
+var log *zap.SugaredLogger
+
+func init() {
+	message := `
+██╗   ██╗███████╗██████╗ ██╗███████╗██╗███████╗██████╗
+██║   ██║██╔════╝██╔══██╗██║██╔════╝██║██╔════╝██╔══██╗
+██║   ██║█████╗  ██████╔╝██║█████╗  ██║█████╗  ██████╔╝
+╚██╗ ██╔╝██╔══╝  ██╔══██╗██║██╔══╝  ██║██╔══╝  ██╔══██╗
+ ╚████╔╝ ███████╗██║  ██║██║██║     ██║███████╗██║  ██║
+  ╚═══╝  ╚══════╝╚═╝  ╚═╝╚═╝╚═╝     ╚═╝╚══════╝╚═╝  ╚═╝ v0.1`
+	fmt.Printf("%s\n", message)
+}
 
 func main() {
 	var appContext appContext
 
-	logger, err := logging.NewLogger(
-		logging.DevelopmentEnvironment,
-		service,
-		"",
-		&http.Client{
-			Timeout: 10 * time.Second,
-		})
-
-	func(log *zap.Logger) {
-		discordgo.Logger = logging.DiscordgoLogger(log.With(zap.String("feature", "discordgo")))
-	}(logger)
-
-	builder, err := di.NewBuilder()
-	if err != nil {
-		logger.Fatal(err.Error())
-	}
-
-	log := logger.Sugar()
-
-	log.Infof("Log type: %t", log)
-
-	err = builder.Add(services.Services...)
-	if err != nil {
-		log.Fatal("Error", zap.Error(err))
-	}
-	app := builder.Build()
+	log, app := DISetup()
 	defer app.Delete()
+	log.Infof("Initial setup complete")
 
-	guildObject, err := app.SafeGet("configData")
-	if guild, ok := guildObject.(*appconfig.MainSettings); ok {
-		log.Infof("GuildID: %s", guild.Discord.Guild)
-	} else {
-		log.Infof("Token: %s", guild.Discord.Guild)
-	}
-
-	verifierRun, err := appContext.Verifier.VerifierRun(app.Get("configData").(*appconfig.MainSettings), app)
-	if err != nil {
-		log.Fatalf("error creating Bot session,", err)
-	}
+	config := app.Get("configData").(*appconfig.MainSettings)
+	verifierRun, err := appContext.Verifier.VerifierRun(config, app)
+	ErrCheck("error creating Bot session: ", err)
 
 	defer verifierRun.Close()
 	err = verifierRun.Start()
-	if err != nil {
-		log.Fatalf("Couldn't start verifierRun: %v", err)
-		return
-	}
+	ErrCheck("Couldn't start verifierRun: ", err)
 
 	sc := make(chan os.Signal, 1)
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)
 	<-sc
+}
+
+func DISetup() (*zap.SugaredLogger, di.Container) {
+	builder, _ := di.NewBuilder()
+	_ = builder.Add(services.Services...)
+	app := builder.Build()
+	log := app.Get("logData").(*zap.SugaredLogger)
+
+	return log, app
+}
+
+func ErrCheck(msg string, err error) {
+	if err != nil {
+		log.Fatalf("%s %s\n", msg, err)
+	}
 }

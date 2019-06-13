@@ -2,7 +2,9 @@ package models
 
 import "time"
 
-type AsesetPackages struct {
+type AssetPackagesDataAccessObject struct{}
+
+type AssetPackages struct {
 	Id               int64     `xorm:"'id' pk autoincr notnull"`
 	AssetID          string    `xorm:"'asset_id' not null index(par_ind) VARCHAR(50)"`
 	AssetApiKey      string    `xorm:"'asset_apikey' unique VARCHAR(30)"`
@@ -14,6 +16,8 @@ type AsesetPackages struct {
 	Verifydate       time.Time `xorm:"'verifydate' created"`
 }
 
-func (p *AsesetPackages) TableName() string {
+var AssetPackagesDAO *AssetPackagesDataAccessObject
+
+func (p *AssetPackagesDataAccessObject) TableName() string {
 	return "asset_packages"
 }

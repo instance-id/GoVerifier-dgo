@@ -3,11 +3,11 @@ package cmdroutes
 import (
 	"bytes"
 
+	. "github.com/instance-id/GoVerifier-dgo/utils"
+
 	"github.com/instance-id/GoVerifier-dgo/appconfig"
 
 	"github.com/sarulabs/di/v2"
-
-	log "github.com/sirupsen/logrus"
 
 	"github.com/bwmarrin/discordgo"
 
@@ -25,26 +25,12 @@ type ListRoles struct {
 
 func (p *ListRoles) Handle(ctx *exrouter.Context) {
 
-	guildObject, err := p.di.SafeGet("configData")
-	if err != nil {
-		log.Fatalf("Erroorrrrrrr: %s", err)
-	}
-	if guild, ok := guildObject.(*appconfig.MainSettings); ok {
-		log.Infof("GuildID: %s", guild.Discord.Guild)
-	} else {
-		log.Fatalf("Shoot.. borked: %s", err)
-	}
-
 	guildRoles, err := ctx.Ses.GuildRoles(p.di.Get("configData").(*appconfig.MainSettings).Discord.Guild)
-	if err != nil {
-		log.Print("Could not get list of current roles", err)
-	}
+	LogFatalf("Could not get list of current roles: ", err)
 
 	roleTable := p.renderMarkDownTable(guildRoles)
 	_, err = ctx.Reply("```" + roleTable + "```")
-	if err != nil {
-		log.Print("Something went wrong when handling listroles request", err)
-	}
+	LogFatalf("Something went wrong when handling listroles request: ", err)
 }
 
 func (p *ListRoles) GetCommand() string {

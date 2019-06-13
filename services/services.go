@@ -1,9 +1,10 @@
 package services
 
 import (
-	"fmt"
 	"net/http"
 	"time"
+
+	. "github.com/instance-id/GoVerifier-dgo/utils"
 
 	"github.com/instance-id/GoVerifier-dgo/components"
 
@@ -64,14 +65,13 @@ var Services = []di.Def{
 				&http.Client{
 					Timeout: 10 * time.Second,
 				})
-			if err != nil {
-				fmt.Printf("Could not get new logger! %s", err)
-			}
+			ServicesError("Could not get new logger! ", err, logger.Sugar())
 
-			f := func(logger *zap.Logger) func(msgL, caller int, format string, a ...interface{}) {
-				discordgo.Logger = logging.DiscordgoLogger(logger.With(zap.String("feature", "discordgo")))
-				return discordgo.Logger
-			}
-			return f(logger), nil
+			func(log *zap.Logger) {
+				discordgo.Logger = logging.DiscordgoLogger(log.With(zap.String("feature", "discordgo")))
+			}(logger)
+
+			log := logger.Sugar()
+			return log, nil
 		}},
 }

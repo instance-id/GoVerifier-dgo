@@ -1,9 +1,8 @@
 package cmdroutes
 
 import (
-	"log"
-
 	"github.com/Necroforger/dgrouter/exrouter"
+	. "github.com/instance-id/GoVerifier-dgo/utils"
 )
 
 const pingRoute = "ping"
@@ -13,9 +12,7 @@ type Ping struct{}
 
 func (p *Ping) Handle(ctx *exrouter.Context) {
 	_, err := ctx.Reply("pong")
-	if err != nil {
-		log.Print("Something went wrong when handling Ping request", err)
-	}
+	LogFatalf("Something went wrong when handling Ping request: ", err)
 }
 
 func (p *Ping) GetCommand() string {

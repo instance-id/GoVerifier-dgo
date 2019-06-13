@@ -1,19 +1,17 @@
 package cmdroutes
 
 import (
-	"log"
+	"time"
 
 	"github.com/instance-id/GoVerifier-dgo/models"
-
-	"github.com/go-xorm/xorm"
-	"github.com/instance-id/GoVerifier-dgo/components"
+	. "github.com/instance-id/GoVerifier-dgo/utils"
 
 	"github.com/sarulabs/di/v2"
 
 	"github.com/Necroforger/dgrouter/exrouter"
 )
 
-const addUserRoute = "addUser"
+const addUserRoute = "adduser"
 const addUserDescription = "Test route to add new user"
 
 type AddUser struct {
@@ -21,11 +19,15 @@ type AddUser struct {
 }
 
 func (a *AddUser) Handle(ctx *exrouter.Context) {
-	user := models.NewVerifiedUser("MostHated", "M374llic4@gmail.com")
-	models.VerifiedUserDAO.AddUser(user, a.di)
+	user := models.NewVerifiedUser(ctx.Msg.Author.Username+"#"+ctx.Msg.Author.Discriminator, "M374llic4@gmail.com")
+	packages := models.NewUserPackages(user, "123123123", "SCT", time.Date(2018, 12, 25, 0, 0, 0, 0, time.Local))
+	models.InvoiceDAO.AddInvoice(user, packages)
 
-	_, err := ctx.Reply("User has been added")
-	ErrCheckf("Something went wrong when handling AddUser request: ", err)
+	_, err := ctx.Reply("User and packages have been added")
+	LogFatalf("Something went wrong when handling AddUser request: ", err)
+
+	//models.VerifiedUserDAO.AddUser(user, a.di)
+
 }
 
 func (a *AddUser) GetCommand() string {
@@ -38,14 +40,4 @@ func (a *AddUser) GetDescription() string {
 
 func NewAddUser(di di.Container) *AddUser {
 	return &AddUser{di: di}
-}
-
-func (a *AddUser) DataAccessContainer() *xorm.Engine {
-	db, err := a.di.SubContainer()
-	if err != nil {
-		log.Printf("Error accessing DI container within AddUser module: %s", err)
-	}
-
-	dba := db.Get("db").(*components.XormDB).Engine
-	return dba
 }

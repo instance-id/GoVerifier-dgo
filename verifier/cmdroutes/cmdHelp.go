@@ -3,7 +3,8 @@ package cmdroutes
 import (
 	"bytes"
 	"fmt"
-	"log"
+
+	. "github.com/instance-id/GoVerifier-dgo/utils"
 
 	"github.com/olekukonko/tablewriter"
 
@@ -25,9 +26,7 @@ func (h *cmdHelp) Handle(ctx *exrouter.Context) {
 	table := h.renderMarkDownTable()
 
 	_, err := ctx.Reply("```" + helpMsg + table + "```")
-	if err != nil {
-		log.Print("Help info request did not complete properly.")
-	}
+	LogFatalf("Help info request did not complete properly: ", err)
 }
 
 func (h cmdHelp) GetCommand() string {

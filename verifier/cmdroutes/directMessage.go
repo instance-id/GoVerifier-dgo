@@ -2,7 +2,8 @@ package cmdroutes
 
 import (
 	"fmt"
-	"log"
+
+	. "github.com/instance-id/GoVerifier-dgo/utils"
 
 	"github.com/Necroforger/dgrouter/exrouter"
 )
@@ -11,14 +12,10 @@ type DirectMessage struct{}
 
 func (d *DirectMessage) Handle(ctx *exrouter.Context) {
 	c, err := ctx.Ses.UserChannelCreate(ctx.Msg.Author.ID)
-	if err != nil {
-		log.Printf("Could not create direct channel to user: %v", err)
-	}
+	LogFatalf("Could not create direct channel to user: ", err)
 
 	_, err = ctx.Ses.ChannelMessageSend(c.ID, fmt.Sprintf("This is a direct message to %s", ctx.Msg.Author))
-	if err != nil {
-		log.Printf("Could not send message: %v", err)
-	}
+	LogFatalf("Could not send message: ", err)
 }
 
 func (d *DirectMessage) GetCommand() string {

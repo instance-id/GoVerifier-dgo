@@ -2,13 +2,10 @@ package cmdroutes
 
 import (
 	"fmt"
-	"log"
 
-	"github.com/go-xorm/xorm"
+	. "github.com/instance-id/GoVerifier-dgo/utils"
 
 	"github.com/instance-id/GoVerifier-dgo/models"
-
-	"github.com/instance-id/GoVerifier-dgo/components"
 
 	"github.com/sarulabs/di/v2"
 
@@ -23,19 +20,19 @@ type DbSetup struct {
 }
 
 func (ds *DbSetup) Handle(ctx *exrouter.Context) {
-	d := ds.DataAccessContainer()
+	d := DatabaseAccessContainer(ds.di)
 
 	if !(func() bool { value, _ := d.IsTableExist("verified_users"); return value }() &&
 		func() bool { value, _ := d.IsTableExist("user_packages"); return value }() &&
 		func() bool { value, _ := d.IsTableExist("asset_packages"); return value }() &&
 		func() bool { value, _ := d.IsTableExist("discord_roles"); return value }()) {
 		_, err := ctx.Reply("Database schema incomplete. Creating/Updating table schema now...")
-		ErrCheckf("Verifier had trouble replying: ", err)
+		LogFatalf("Verifier had trouble replying: ", err)
 
-		err = d.Sync(new(models.VerifiedUser), new(models.UserPackages), new(models.AsesetPackages), new(models.DiscordRoles))
+		err = d.Sync(new(models.VerifiedUser), new(models.UserPackages), new(models.AssetPackages), new(models.DiscordRoles))
 		if err != nil {
 			_, err := ctx.Reply(func() string { result := fmt.Sprintf("Verifier was unable to create tables: %s", err); return result }())
-			ErrCheckf("Unable to send table creation reply through Discord: ", err)
+			LogFatalf("Unable to send table creation reply through Discord: ", err)
 		}
 
 		resultv, err := d.IsTableExist("verified_users")
@@ -46,14 +43,14 @@ func (ds *DbSetup) Handle(ctx *exrouter.Context) {
 		_, err = ctx.Reply(func() string {
 			return fmt.Sprintf("Schema applied: verified_users: %t - user_packages: %t - asset_packages: %t - discord_roles: %t", resultv, resultp, resulta, resultr)
 		}())
-		ErrCheckf("Unable to send table creation reply through Discord: ", err)
+		LogFatalf("Unable to send table creation reply through Discord: ", err)
 
 		_, err = ctx.Reply("Database schema creation/update successful")
-		ErrCheckf("Verifier had trouble replying table creation success: ", err)
+		LogFatalf("Verifier had trouble replying table creation success: ", err)
 
 	} else {
 		_, err := ctx.Reply("Database schema already up to date")
-		ErrCheckf("Verifier had trouble replying: ", err)
+		LogFatalf("Verifier had trouble replying: ", err)
 	}
 }
 
@@ -67,14 +64,4 @@ func (ds *DbSetup) GetDescription() string {
 
 func NewDbSetup(di di.Container) *DbSetup {
 	return &DbSetup{di: di}
-}
-
-func (ds *DbSetup) DataAccessContainer() *xorm.Engine {
-	db, err := ds.di.SubContainer()
-	if err != nil {
-		log.Printf("Error accessing DI container within AddUser module: %s", err)
-	}
-
-	dba := db.Get("db").(*components.XormDB).Engine
-	return dba
 }

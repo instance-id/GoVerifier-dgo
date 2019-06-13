@@ -1,51 +1,51 @@
 settings:
-  system:
-    token: 'NDk1MDU2MjExMzM5NzcxOTE3.Do8gsw.jjgr4p7Z56w9O_RLTznBbze3u7M'
-    commandprefix: '!cmd '
-    requireemail: 'Yes'
-    consoleloglevel: 'DEBUG'
-    fileloglevel: "DEBUG"
-  integrations:
-    wordpress: 'No'
-    connection: 'Oauth2'
-    webaddress: 'http://instance.id'
-  discord:
-    guild: '468705323088085012'
-    botusers:
-      - '498336546987048970'
-      - '498336546987048970'
-    roles:
-      Verified: '468710520002969600'
-      SCT: '495402309912756242'
-      UFPS1: '495402356612268035'
-      TPC: '503852507882323989'
-      FPC: '503853845668036617'
   assets:
-    datecompare: 'Yes'
-    comparedate: '2018-08-31'
-    assetoriginal: 'TPC1'
-    assetteplacement: 'TPC'
-    apiKey:
-      SCT: '3LuhEVAn0fKx7giKOH8jda7aft8'
-      UCC: 'HRa4vZFa8jXisIJSj9vw9TrOyRk'
-      TPC: 'HRa4vZFa8jXisIJSj9vw9TrOyRk'
-      UTPS: 'HRa4vZFa8jXisIJSj9vw9TrOyRk'
-      UTPM: 'HRa4vZFa8jXisIJSj9vw9TrOyRk'
-      TPC1: 'HRa4vZFa8jXisIJSj9vw9TrOyRk'
-      FPC: 'HRa4vZFa8jXisIJSj9vw9TrOyRk'
-      UFPS: 'HRa4vZFa8jXisIJSj9vw9TrOyRk'
-      UFPM: 'HRa4vZFa8jXisIJSj9vw9TrOyRk'
-      UFPS1: '5AS4zMOcLj3aaF2T1eEVioQsT04'
-      BD: 'HRa4vZFa8jXisIJSj9vw9TrOyRk'
+    apikey:
+      BD: HRa4vZFa8jXisIJSj9vw9TrOyRk
+      FPC: HRa4vZFa8jXisIJSj9vw9TrOyRk
+      SCT: 3LuhEVAn0fKx7giKOH8jda7aft8
+      TPC: HRa4vZFa8jXisIJSj9vw9TrOyRk
+      TPC1: HRa4vZFa8jXisIJSj9vw9TrOyRk
+      UCC: HRa4vZFa8jXisIJSj9vw9TrOyRk
+      UFPM: HRa4vZFa8jXisIJSj9vw9TrOyRk
+      UFPS: HRa4vZFa8jXisIJSj9vw9TrOyRk
+      UFPS1: 5AS4zMOcLj3aaF2T1eEVioQsT04
+      UTPM: HRa4vZFa8jXisIJSj9vw9TrOyRk
+      UTPS: HRa4vZFa8jXisIJSj9vw9TrOyRk
+    assetoriginal: TPC1
+    assetreplacement: TPC
+    comparedate: "2018-08-31"
+    datecompare: "No"
     package:
-      SCT: 'SCT - Scriptable Text'
-      UCC: 'Ultimate Character Controller'
-      TPC: 'Third Person Controller'
+      BD: Behavior Designer - Behavior Trees for Everyone
+      FPC: First Person Controller
+      SCT: SCT - Scriptable Text
+      TPC: Third Person Controller
+      TPC1: Third Person Controller
       TPS: 'UTPS: Ultimate Third Person Shooter'
-      UTPM: 'UTPM: Ultimate Third Person Melee'
-      TPC1: 'Third Person Controller'
-      FPC: 'First Person Controller'
-      UFPS: 'UFPS: Ultimate First Person Shooter'
+      UCC: Ultimate Character Controller
       UFPM: 'UFPM: Ultimate First Person Melee'
+      UFPS: 'UFPS: Ultimate First Person Shooter'
       UFPS1: 'UFPS : Ultimate FPS'
-      BD: 'Behavior Designer - Behavior Trees for Everyone'
+      UTPM: 'UTPM: Ultimate Third Person Melee'
+  discord:
+    botusers:
+    - "498336546987048970"
+    - "498336546987048970"
+    guild: "468705323088085012"
+    roles:
+      FPC: "503853845668036617"
+      SCT: "495402309912756242"
+      TPC: "503852507882323989"
+      UFPS1: "495402356612268035"
+      Verified: "468710520002969600"
+  integrations:
+    connection: Oauth2
+    webaddress: http://instance.id
+    wordpress: "No"
+  system:
+    commandprefix: '!cmd '
+    consoleloglevel: INFO
+    fileloglevel: INFO
+    requireemail: "Yes"
+    token: NDk1MDU2MjExMzM5NzcxOTE3.Do8gsw.jjgr4p7Z56w9O_RLTznBbze3u7M

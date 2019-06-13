@@ -1,8 +1,7 @@
 package cmdroutes
 
 import (
-	"log"
-
+	. "github.com/instance-id/GoVerifier-dgo/utils"
 	"github.com/sarulabs/di/v2"
 
 	"github.com/Necroforger/dgrouter/exrouter"
@@ -24,9 +23,7 @@ func (u *ExampleSubRoute) GetDescription() string {
 
 func (u *ExampleSubRoute) Handle(ctx *exrouter.Context) {
 	_, err := ctx.Reply("This is a sub route. " + ctx.Msg.Author.Username)
-	if err != nil {
-		log.Printf("Something went wrong: %v", err)
-	}
+	LogFatalf("Something went wrong: ", err)
 }
 
 func (u *ExampleSubRoute) GetCommand() string {

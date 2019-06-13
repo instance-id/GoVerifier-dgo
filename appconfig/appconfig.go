@@ -64,6 +64,10 @@ func (m *MainSettings) GetConfig() *MainSettings {
 	return m.LoadConfig()
 }
 
+func (m *MainSettings) SetConfig() *MainSettings {
+	return m.SaveConfig()
+}
+
 func (m *MainSettings) LoadConfig() *MainSettings {
 
 	config.AddDriver(yaml.Driver)
@@ -123,4 +127,39 @@ func (m *MainSettings) LoadConfig() *MainSettings {
 		}}
 
 	return mainSettings
+}
+
+func (m *MainSettings) SaveConfig() *MainSettings {
+
+	yml := New()
+
+	//err := yml.Write("./appconfig/config.yml")
+
+	yml.Set("settings", "system", "token", m.System.Token)
+	yml.Set("settings", "system", "commandprefix", m.System.CommandPrefix)
+	yml.Set("settings", "system", "requireemail", m.System.RequireEmail)
+	yml.Set("settings", "system", "consoleloglevel", m.System.ConsoleLogLevel)
+	yml.Set("settings", "system", "fileloglevel", m.System.FileLogLevel)
+
+	yml.Set("settings", "integrations", "wordpress", m.Integrations.WordPress)
+	yml.Set("settings", "integrations", "connection", m.Integrations.Connection)
+	yml.Set("settings", "integrations", "webaddress", m.Integrations.WebAddress)
+
+	yml.Set("settings", "discord", "guild", m.Discord.Guild)
+	yml.Set("settings", "discord", "botusers", m.Discord.BotUsers)
+	yml.Set("settings", "discord", "roles", m.Discord.Roles)
+
+	yml.Set("settings", "assets", "datecompare", "No")
+	yml.Set("settings", "assets", "comparedate", m.Assets.CompareDate)
+	yml.Set("settings", "assets", "assetoriginal", m.Assets.AssetOriginal)
+	yml.Set("settings", "assets", "assetreplacement", m.Assets.AssetReplacement)
+	yml.Set("settings", "assets", "apikey", m.Assets.ApiKeys)
+	yml.Set("settings", "assets", "package", m.Assets.Packages)
+
+	err := yml.Write("./appconfig/config.yml")
+	if err != nil {
+		panic(err)
+	}
+
+	return m
 }
