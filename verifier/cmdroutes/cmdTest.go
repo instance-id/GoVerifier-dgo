@@ -1,7 +1,6 @@
 package cmdroutes
 
 import (
-	. "github.com/instance-id/GoVerifier-dgo/utils"
 	"github.com/sarulabs/di/v2"
 
 	"github.com/Necroforger/dgrouter/exrouter"
@@ -24,7 +23,26 @@ func (t *Test) Handle(ctx *exrouter.Context) {
 	//	Di:  Dac,
 	//}
 
-	Dac.SetConfig()
+	////_, err = Dac.SetConfig()
+	//LogFatalf("Could not write to config file: ", err)
+	//if err != nil {
+	//	msg := fmt.Sprintf("Could not write to config file: %s", err)
+	//	_, err = ctx.Ses.ChannelMessageSend(c.ID, msg)
+	//	LogFatalf("Could not send reply: ", err)
+	//}
+	//
+	//db, err := t.di.SubContainer()
+	//LogFatalf("Error accessing DI container within AddUser module: ", err)
+	//
+	////database := db.Get("dbConn").(*components.DbConfig).Db
+	//
+	////_, err = database.SetDbConfig()
+	//LogFatalf("Could not write to config file: ", err)
+	//if err != nil {
+	//	msg := fmt.Sprintf("Could not write to dbconfig file: %s", err)
+	//	_, err = ctx.Ses.ChannelMessageSend(c.ID, msg)
+	//	LogFatalf("Could not send reply: ", err)
+	//}
 
 }
 

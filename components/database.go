@@ -26,7 +26,7 @@ func (xdb *DbConfig) ConnectDB(d *appconfig.DbSettings) *DbConfig {
 		Db: d,
 		Xorm: &XormDB{
 			Engine: func() *xorm.Engine {
-				eng, err := xorm.NewEngine(d.Database, DetermineConnection(d))
+				eng, err := xorm.NewEngine(d.Providers[d.Database], DetermineConnection(d))
 				if err != nil {
 					logrus.Fatalf("Database Connection Error: %s", err)
 				}
@@ -64,7 +64,8 @@ func (x *XormDB) Close() (err error) {
 
 func DetermineConnection(d *appconfig.DbSettings) string {
 	var connString string
-	switch d.Database {
+
+	switch d.Providers[d.Database] {
 	case "mysql":
 		connString = fmt.Sprintf("%s:%s@tcp(%s:3306)/%s?charset=utf8",
 			d.Data.Username,

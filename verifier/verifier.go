@@ -49,17 +49,17 @@ func (v *Verifier) VerifierRun(s *appconfig.MainSettings, di di.Container) (*Con
 			cmdroutes.NewTest(di)}}
 
 	var logLevel int
-	switch settings.Settings.System.ConsoleLogLevel {
-	case "DEBUG":
-		logLevel = discordgo.LogDebug
-	case "INFO":
+	switch settings.Settings.System.FileLogLevel {
+	case 0:
 		logLevel = discordgo.LogInformational
-	case "WARNING":
+	case 1:
+		logLevel = discordgo.LogDebug
+	case 2:
 		logLevel = discordgo.LogWarning
-	case "ERROR":
+	case 3:
 		logLevel = discordgo.LogError
 	default:
-		logLevel = discordgo.LogError
+		logLevel = discordgo.LogInformational
 	}
 
 	settings.Session.LogLevel = logLevel
@@ -70,8 +70,8 @@ func (v *Verifier) VerifierRun(s *appconfig.MainSettings, di di.Container) (*Con
 
 	session.AddHandler(ready)
 
-	log.Infof("Connected as: %s : %s \n", system.Username, system.Email)
-	log.Infof("Command Prefix: \"%s\" registered\n", settings.Settings.System.CommandPrefix)
+	log.Infof("Connected as: %s : %s ", system.Username, system.Email)
+	log.Infof("Command Prefix: \"%s\" registered", settings.Settings.System.CommandPrefix)
 
 	return settings, nil
 }

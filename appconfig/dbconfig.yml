@@ -1,7 +1,0 @@
-database: 'mysql'
-data:
-  address: 'instance.id'
-  username: 'instance'
-  password: '!WE2er#$'
-  dbname: 'verifier'
-  tableprefix: ''

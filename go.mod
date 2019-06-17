@@ -11,6 +11,7 @@ require (
 	github.com/buger/jsonparser v0.0.0-20181115193947-bf1c66bbce23 // indirect
 	github.com/bwmarrin/discordgo v0.19.0
 	github.com/denisenkom/go-mssqldb v0.0.0-20190515213511-eb9f6a1743f3 // indirect
+	github.com/emirpasic/gods v1.12.0 // indirect
 	github.com/go-ozzo/ozzo-validation v3.5.0+incompatible // indirect
 	github.com/go-sql-driver/mysql v1.4.1
 	github.com/go-xorm/builder v0.3.4 // indirect

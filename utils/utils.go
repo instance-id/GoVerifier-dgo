@@ -17,6 +17,7 @@ import (
 // --- Exposure of variables to rest of application ------------------------------------------------------------------------
 var (
 	Dba *xorm.Engine
+	Dbd *appconfig.DbSettings
 	Dac *appconfig.MainSettings
 	Log *zap.SugaredLogger
 )
@@ -38,9 +39,11 @@ type ErrParam struct {
 
 // --- Initialization of dependency injection containers from Verifier -----------------------------------------------------
 func CmdInitialize(di di.Container) {
-	Dba = DatabaseAccessContainer(di)
 	Dac = DataAccessContainer(di)
+	Dbd = DatabaseContainer(di)
+	Dba = DatabaseAccessContainer(di)
 	Log = LogAccessContainer(di)
+
 }
 
 // --- Provides global access to configuration data via dependency injection container -------------------------------------
@@ -50,12 +53,25 @@ func DataAccessContainer(di di.Container) *appconfig.MainSettings {
 	return d
 }
 
+// --- Provides global access to configuration data via dependency injection container -------------------------------------
+func DatabaseContainer(di di.Container) *appconfig.DbSettings {
+	d, _ := di.Get("dbData").(*appconfig.DbSettings)
+	return d
+}
+
 // --- Provides global database access via dependency injection container --------------------------------------------------
 func DatabaseAccessContainer(di di.Container) *xorm.Engine {
 	db, err := di.SubContainer()
-	LogFatalf("Error accessing DI container within AddUser module: ", err)
+	LogFatalf("Error accessing DI container from utils DatabaseAccessContainer(): ", err)
 
 	database := db.Get("db").(*components.XormDB).Engine
+	//database, err := db.SafeGet("db")
+	//if err != nil {
+	//	LogFatalf("Error with SafeGet1 from utils DatabaseAccessContainer(): ", err)
+	//}
+	//dbc, _ := database.(*components.XormDB)
+	//dbe := dbc.Engine
+
 	return database
 }
 

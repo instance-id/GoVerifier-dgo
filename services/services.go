@@ -4,14 +4,11 @@ import (
 	"net/http"
 	"time"
 
-	. "github.com/instance-id/GoVerifier-dgo/utils"
-
-	"github.com/instance-id/GoVerifier-dgo/components"
-
-	"github.com/instance-id/GoVerifier-dgo/logging"
-
 	"github.com/bwmarrin/discordgo"
 	"github.com/instance-id/GoVerifier-dgo/appconfig"
+	"github.com/instance-id/GoVerifier-dgo/components"
+	"github.com/instance-id/GoVerifier-dgo/logging"
+	. "github.com/instance-id/GoVerifier-dgo/utils"
 	"github.com/sarulabs/di/v2"
 	"go.uber.org/zap"
 )
@@ -26,13 +23,21 @@ var Services = []di.Def{
 			return config, nil
 		}},
 	{
+		// --- Get DB Data ----------------------------------------------------------------------
+		Name:  "dbData",
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			var db appconfig.DbSettings
+			dbConfig := db.GetDbConfig()
+			return dbConfig, nil
+		}},
+	{
 		// --- Creates database connection object ----------------------------------------------------------------------
 		Name:  "dbConn",
 		Scope: di.App,
 		Build: func(ctn di.Container) (interface{}, error) {
-			var db appconfig.DbSettings
 			var conn components.DbConfig
-			dbconfig := db.GetDbConfig()
+			dbconfig := ctn.Get("dbData").(*appconfig.DbSettings)
 			dbConn := conn.ConnectDB(dbconfig)
 			return dbConn, nil
 		},

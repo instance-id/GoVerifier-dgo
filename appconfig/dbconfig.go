@@ -5,14 +5,11 @@ import (
 	"github.com/gookit/config/v2/yaml"
 )
 
-type DbData struct {
-	DbSettings DbSettings
-}
-
 // --- Maps dbconfig.yml fields to DbSettings fields -------------------------------------------------------------------
 type DbSettings struct {
-	Database string `json:"database"`
-	Data     struct {
+	Providers []string
+	Database  int `json:"database"`
+	Data      struct {
 		Address     string `json:"address"`
 		Username    string `json:"username"`
 		Password    string `json:"password"`
@@ -23,13 +20,13 @@ type DbSettings struct {
 
 // --- Gets called from Services and returns DbSettings to Dependency Injection container ------------------------------
 func (d *DbSettings) GetDbConfig() *DbSettings {
-	return d.LoadDbConfig()
+	return d.loadDbConfig()
 }
 
 // --- Populates the DbSettings struct from dbconfig.yml file and returns the data for use -----------------------------
-func (d *DbSettings) LoadDbConfig() *DbSettings {
+func (d *DbSettings) loadDbConfig() *DbSettings {
 	config.AddDriver(yaml.Driver)
-	filename := "./appconfig/dbconfig.yml"
+	filename := "./config/dbconfig.yml"
 
 	err := config.LoadFiles(string(filename))
 	if err != nil {
@@ -37,7 +34,8 @@ func (d *DbSettings) LoadDbConfig() *DbSettings {
 	}
 
 	dbSettings := &DbSettings{
-		Database: config.String("database"),
+		Providers: []string{"mysql", "postgres", "mssql", "sqlite"},
+		Database:  config.Int("database"),
 		Data: struct {
 			Address     string `json:"address"`
 			Username    string `json:"username"`
