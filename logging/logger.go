@@ -10,7 +10,6 @@ import (
 func NewLogger(env Environment, service, discordWebhookURL string, client *http.Client) (*zap.Logger, error) {
 	var logger *zap.Logger
 	var err error
-
 	switch env {
 	case ProductionEnvironment:
 
@@ -18,6 +17,18 @@ func NewLogger(env Environment, service, discordWebhookURL string, client *http.
 		if err != nil {
 			return nil, err
 		}
+	case DevelopmentEnvironment:
+		outpath := "./logs/verifier.log"
+
+		config := zap.NewDevelopmentConfig()
+		config.OutputPaths = []string{outpath}
+		config.ErrorOutputPaths = []string{outpath}
+		logger, err := config.Build()
+
+		if err != nil {
+			return nil, err
+		}
+		return logger, nil
 	default:
 
 		logger, err = zap.NewDevelopment()

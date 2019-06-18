@@ -62,7 +62,6 @@ var Services = []di.Def{
 		Name: "logData",
 		Build: func(ctn di.Container) (interface{}, error) {
 			var service = "Verifier"
-
 			logger, err := logging.NewLogger(
 				logging.DevelopmentEnvironment,
 				service,

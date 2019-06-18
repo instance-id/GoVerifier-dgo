@@ -12,24 +12,37 @@ import (
 	"go.uber.org/zap"
 )
 
-var log *zap.SugaredLogger
+var (
+	log *zap.SugaredLogger
+	wg  sync.WaitGroup
+	ad  *AccessData
+)
 
-var wg sync.WaitGroup
-
-type ServerData struct {
-	Log      *zap.SugaredLogger
-	Port     *string
-	Verifier *verifier.Config
+type AccessData struct {
+	key []byte
 }
 
-type Server struct{}
+type ServerData struct {
+	Log       *zap.SugaredLogger
+	Port      *string
+	Verifier  *verifier.Config
+	Key       string
+	Phrase    string
+	encrypted []byte
+}
+
+type Server struct {
+	data *ServerData
+}
 
 type Response struct {
 	Message string
+	Key     []byte
 }
 
 type Request struct {
 	Name string
+	Key  []byte
 }
 
 var (
@@ -44,6 +57,11 @@ func (s *Server) Add(u [2]int64, reply *int64) error {
 }
 
 func (s *Server) StartServer(req Request, res *Response) error {
+	if !DecryptKey(req.Key) {
+		res.Message = fmt.Sprintf("Could not Authenticate")
+		return nil
+	}
+
 	res.Message = fmt.Sprintf("Starting Verfier server")
 	log.Infof("Starting Verifier server")
 	go Run()
@@ -51,6 +69,11 @@ func (s *Server) StartServer(req Request, res *Response) error {
 }
 
 func (s *Server) RestartServer(req Request, res *Response) error {
+	if !DecryptKey(req.Key) {
+		res.Message = fmt.Sprintf("Could not Authenticate")
+		return nil
+	}
+
 	res.Message = fmt.Sprintf("Restarting Verfier server")
 	log.Infof("Restarting Verifier server")
 	runner <- true
@@ -59,6 +82,11 @@ func (s *Server) RestartServer(req Request, res *Response) error {
 }
 
 func (s *Server) StopServer(req Request, res *Response) error {
+	if !DecryptKey(req.Key) {
+		res.Message = fmt.Sprintf("Could not Authenticate")
+		return nil
+	}
+
 	res.Message = fmt.Sprintf("Stopping Verfier server")
 	log.Infof("Stopping Verifier server")
 	runner <- true
@@ -121,10 +149,17 @@ func ErrCheck(msg string, err error) {
 	}
 }
 
-//func Timeout() *time.Timer {
-//	timer1 := time.NewTimer(10 * time.Second)
-//	<-timer1.C
-//	<-runner
-//	fmt.Println("Timer 1 expired")
-//	return timer1
-//}
+func GetKey(s *ServerData) *ServerData {
+	encrypted := encrypt([]byte(s.Key), s.Phrase)
+	s.encrypted = encrypted
+	return s
+}
+
+func DecryptKey(requestKey []byte) bool {
+	unencrypted := decrypt(requestKey, serv.Phrase)
+	serv.Log.Infof(fmt.Sprintf("Encrypted: %x, Decrypted: %s", requestKey, unencrypted))
+	if string(unencrypted) == serv.Key {
+		return true
+	}
+	return false
+}

@@ -7,4 +7,5 @@ type Environment string
 const (
 	DevelopmentEnvironment Environment = "development"
 	ProductionEnvironment  Environment = "production"
+	OutputEnvironment      Environment = "output"
 )

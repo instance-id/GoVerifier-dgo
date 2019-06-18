@@ -24,14 +24,7 @@ type appContext struct {
 var log *zap.SugaredLogger
 
 func init() {
-	message := `
-	██╗   ██╗███████╗██████╗ ██╗███████╗██╗███████╗██████╗
-	██║   ██║██╔════╝██╔══██╗██║██╔════╝██║██╔════╝██╔══██╗
-	██║   ██║█████╗  ██████╔╝██║█████╗  ██║█████╗  ██████╔╝
-	╚██╗ ██╔╝██╔══╝  ██╔══██╗██║██╔══╝  ██║██╔══╝  ██╔══██╗
-	 ╚████╔╝ ███████╗██║  ██║██║██║     ██║███████╗██║  ██║
- 	  ╚═══╝  ╚══════╝╚═╝  ╚═╝╚═╝╚═╝     ╚═╝╚══════╝╚═╝  ╚═╝ v0.1`
-	fmt.Printf("%s\n", message)
+
 }
 
 func main() {
@@ -46,7 +39,17 @@ func main() {
 	log, app := DISetup()
 	defer app.Delete()
 
-	log.Infof("Port: %s", *port)
+	message := []string{
+		"██╗   ██╗███████╗██████╗ ██╗███████╗██╗███████╗██████╗",
+		"██║   ██║██╔════╝██╔══██╗██║██╔════╝██║██╔════╝██╔══██╗",
+		"██║   ██║█████╗  ██████╔╝██║█████╗  ██║█████╗  ██████╔╝",
+		"╚██╗ ██╔╝██╔══╝  ██╔══██╗██║██╔══╝  ██║██╔══╝  ██╔══██╗",
+		" ╚████╔╝ ███████╗██║  ██║██║██║     ██║███████╗██║  ██║",
+		"  ╚═══╝  ╚══════╝╚═╝  ╚═╝╚═╝╚═╝     ╚═╝╚══════╝╚═╝  ╚═╝ v0.1"}
+	for s := range message {
+		msg := fmt.Sprintf("%s", message[s])
+		log.Infof("%s", msg)
+	}
 
 	config := app.Get("configData").(*appconfig.MainSettings)
 	verifierRun, err := appContext.Verifier.VerifierRun(config, app)
@@ -57,6 +60,8 @@ func main() {
 			Port:     port,
 			Log:      log,
 			Verifier: verifierRun,
+			Phrase:   config.Discord.Guild,
+			Key:      config.System.Token[len(config.System.Token)-13:],
 		}
 		RunServer(&server, log)
 

@@ -22,40 +22,22 @@ func DiscordgoLogger(logger *zap.Logger) func(msgL, caller int, format string, a
 		fns := strings.Split(name, ".")
 		name = fns[len(fns)-1]
 
-		l := logger.With(
-			zap.String("file", fmt.Sprintf("%s:%d", file, line)),
-			zap.String("method", name),
-		)
+		l := logger.With(zap.String("file", fmt.Sprintf("%s:%d", file, line)), zap.String("method", name))
 
 		switch msgL {
 		case discordgo.LogError:
-			l.Error(
-				fmt.Sprintf(format, a...),
-			)
+			l.Error(fmt.Sprintf(format, a...))
 			return
-
 		case discordgo.LogWarning:
-			l.Warn(
-				fmt.Sprintf(format, a...),
-			)
+			l.Warn(fmt.Sprintf(format, a...))
 			return
-
 		case discordgo.LogInformational:
-			l.Info(
-				fmt.Sprintf(format, a...),
-			)
+			l.Info(fmt.Sprintf(format, a...))
 			return
-
 		case discordgo.LogDebug:
-			l.Debug(
-				fmt.Sprintf(format, a...),
-			)
+			l.Debug(fmt.Sprintf(format, a...))
 			return
 		}
-
-		l.Info(
-			fmt.Sprintf(format, a...),
-			zap.Int("log_level", msgL),
-		)
+		l.Info(fmt.Sprintf(format, a...), zap.Int("log_level", msgL))
 	}
 }
