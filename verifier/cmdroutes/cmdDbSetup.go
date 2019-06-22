@@ -29,7 +29,7 @@ func (ds *DbSetup) Handle(ctx *exrouter.Context) {
 		_, err := ctx.Reply("Database schema incomplete. Creating/Updating table schema now...")
 		LogFatalf("Verifier had trouble replying: ", err)
 
-		err = d.Sync(new(models.VerifiedUser), new(models.UserPackages), new(models.AssetPackages), new(models.DiscordRoles))
+		err = d.Sync(new(models.VerifiedUsers), new(models.UserPackages), new(models.AssetPackages), new(models.DiscordRoles))
 		if err != nil {
 			_, err := ctx.Reply(func() string { result := fmt.Sprintf("Verifier was unable to create tables: %s", err); return result }())
 			LogFatalf("Unable to send table creation reply through Discord: ", err)

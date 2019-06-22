@@ -1,146 +1,167 @@
 package rpcserver
 
 import (
+	"context"
 	"fmt"
 	"net"
-	"net/rpc"
+	"os"
 	"runtime"
 	"sync"
+	"time"
 
 	"github.com/instance-id/GoVerifier-dgo/verifier"
-
+	"github.com/smallnest/rpcx/server"
 	"go.uber.org/zap"
 )
 
 var (
-	log *zap.SugaredLogger
-	wg  sync.WaitGroup
-	ad  *AccessData
+	serv       *RpcServer
+	log        *zap.SugaredLogger
+	wg         sync.WaitGroup
+	ad         *AccessData
+	runner     chan bool
+	timeOut    chan bool
+	ip         = "localhost"
+	port       = "14555"
+	address    = fmt.Sprintf("%s:%s", ip, port)
+	clientConn net.Conn
 )
+
+type Server struct{}
 
 type AccessData struct {
 	key []byte
 }
 
 type ServerData struct {
-	Log       *zap.SugaredLogger
-	Port      *string
-	Verifier  *verifier.Config
-	Key       string
-	Phrase    string
-	encrypted []byte
+	ProcessName     string
+	ProcessID       int
+	Log             *zap.SugaredLogger
+	Address         string
+	Port            *string
+	Verifier        *verifier.Config
+	Key             string
+	Phrase          string
+	encrypted       []byte
+	RpcRunning      bool
+	VerifierRunning bool
+	svr             *server.Server
 }
 
-type Server struct {
-	data *ServerData
+type RpcServer struct {
+	Data *ServerData
 }
 
-type Response struct {
-	Message string
+type Reply struct {
+	Message   string
+	RunCheck  bool
+	RPCCheck  bool
+	ProcessID int
+	Key       []byte
+}
+
+type Args struct {
 	Key     []byte
+	Name    string
+	Message string
+	Ctx     map[string]interface{}
 }
 
-type Request struct {
-	Name string
-	Key  []byte
-}
+func Status(args Args, res *Reply) *Reply {
+	var tmpReply = new(Reply)
+	log.Infof("Checking RPC_STATUS")
 
-var (
-	runner chan bool
-	serv   *ServerData
-)
+	if serv.Data.VerifierRunning {
+		log.Infof("Verifier UI checking status")
+		tmpReply.Message = fmt.Sprintf("Starting Verfier server")
+		tmpReply.RunCheck = serv.Data.VerifierRunning
+		tmpReply.RPCCheck = serv.Data.RpcRunning
+		return tmpReply
 
-func (s *Server) Add(u [2]int64, reply *int64) error {
-	*reply = u[0] + u[1]
-	fmt.Println("Received connection. Executing command!")
-	return nil
-}
-
-func (s *Server) StartServer(req Request, res *Response) error {
-	if !DecryptKey(req.Key) {
-		res.Message = fmt.Sprintf("Could not Authenticate")
-		return nil
+		//res.ProcessID = serv.Data.svr.
+	} else {
+		log.Infof("Verifier not running")
+		tmpReply.Message = "Verifier not running"
+		tmpReply.RunCheck = false
+		tmpReply.RPCCheck = true
+		return tmpReply
 	}
+}
 
+func StartServer(args Args, res *Reply) *Reply {
 	res.Message = fmt.Sprintf("Starting Verfier server")
-	log.Infof("Starting Verifier server")
 	go Run()
-	return nil
+
+	log.Infof("Starting Verifier server: After Run()")
+	return res
 }
 
-func (s *Server) RestartServer(req Request, res *Response) error {
-	if !DecryptKey(req.Key) {
-		res.Message = fmt.Sprintf("Could not Authenticate")
-		return nil
-	}
+func RestartServer(args Args, res *Reply) *Reply {
 
-	res.Message = fmt.Sprintf("Restarting Verfier server")
-	log.Infof("Restarting Verifier server")
-	runner <- true
-	go Run()
-	return nil
-}
-
-func (s *Server) StopServer(req Request, res *Response) error {
-	if !DecryptKey(req.Key) {
-		res.Message = fmt.Sprintf("Could not Authenticate")
-		return nil
-	}
-
-	res.Message = fmt.Sprintf("Stopping Verfier server")
 	log.Infof("Stopping Verifier server")
-	runner <- true
-	return nil
+	serv.Data.Verifier.Close()
+	serv.Data.VerifierRunning = false
+	log.Infof("Restarting Verifier server")
+
+	defer serv.Data.Verifier.Close()
+	err := serv.Data.Verifier.Start()
+	ErrCheck("Couldn't start verifierRun: ", err)
+	serv.Data.VerifierRunning = true
+
+	log.Infof("Restart complete")
+	res.Message = fmt.Sprintf("Restart complete")
+
+	return res
 }
 
-func server() {
-	log.Infof("Starting Server!")
-	log.Infof(fmt.Sprintf("127.0.0.1:%s", *serv.Port))
-
-	err := rpc.Register(new(Server))
-	if err != nil {
-		fmt.Printf("Error registering RPC: %s", err)
-	}
-
-	ln, err := net.Listen("tcp", fmt.Sprintf("127.0.0.1:%s", *serv.Port))
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	log.Infof("RPC server running at: %s", ln.Addr().String())
-
-	for {
-		c, err := ln.Accept()
-		if err != nil {
-			continue
-		}
-		go rpc.ServeConn(c)
-	}
+func StopServer(args Args, res *Reply) *Reply {
+	res.Message = fmt.Sprintf("Shut down of Verifier initiated")
+	go delayedOsExit()
+	return res
 }
 
-func RunServer(s *ServerData, logs *zap.SugaredLogger) {
+func RunServer(r *RpcServer, Logs *zap.SugaredLogger) {
+	serv = r
+	log = Logs
+	serv.Data.VerifierRunning = false
 	wg.Add(1)
-	log = logs
-	serv = s
-	go server()
+
+	go rpcServer()
 	runtime.Gosched()
 	log.Infof("RPC Server started. Waiting for Verifier start signal.")
+	serv.Data.RpcRunning = true
+	receiveOrTimeout()
 	wg.Wait()
 	log.Infof("Canceled via RPC")
+	serv.Data.VerifierRunning = false
+	serv.Data.RpcRunning = false
+
+}
+
+func rpcServer() {
+	log.Infof("Starting Server on port: %s", RPC_PORT)
+
+	s := server.NewServer()
+	//s.Register(new(Arith), "")
+	s.RegisterName("Server", new(Server), "")
+	err := s.Serve("tcp", address)
+	if err != nil {
+		panic(err)
+	}
 
 }
 
 func Run() {
-	defer serv.Verifier.Close()
-	err := serv.Verifier.Start()
-	ErrCheck("Couldn't start verifierRun: ", err)
 
+	defer serv.Data.Verifier.Close()
+	err := serv.Data.Verifier.Start()
+	ErrCheck("Couldn't start verifierRun: ", err)
+	serv.Data.VerifierRunning = true
 	runner = make(chan bool)
+	timeOut <- true
 	<-runner
 	wg.Done()
 	log.Infof("Issued close")
-
 }
 
 func ErrCheck(msg string, err error) {
@@ -156,10 +177,83 @@ func GetKey(s *ServerData) *ServerData {
 }
 
 func DecryptKey(requestKey []byte) bool {
-	unencrypted := decrypt(requestKey, serv.Phrase)
-	serv.Log.Infof(fmt.Sprintf("Encrypted: %x, Decrypted: %s", requestKey, unencrypted))
-	if string(unencrypted) == serv.Key {
+	unencrypted := decrypt(requestKey, serv.Data.Phrase)
+	if string(unencrypted) == serv.Data.Key {
 		return true
 	}
 	return false
+}
+
+func delayedOsExit() {
+	time.Sleep(5000 * time.Millisecond)
+	log.Infof("Stopping Verifier server")
+	runner <- true
+}
+
+func (s *Server) RpcRequestHandler(ctx context.Context, args Args, reply *Reply) error {
+	fmt.Printf("%x : %s : %s: %s \n", args.Key, args.Name, args.Message, reply.Message)
+	var tmpReply *Reply
+
+	clientConn = ctx.Value(server.RemoteConnContextKey).(net.Conn)
+	log.Infof(" Client IP: %s \n ", clientConn.RemoteAddr().String())
+
+	if !DecryptKey(args.Key) {
+		log.Warnf("Failed Authentication attempt from: %s ", clientConn.RemoteAddr().String())
+		args.Message = fmt.Sprintf("Could not Authenticate from: %s", clientConn.RemoteAddr().String())
+		return nil
+	}
+	serv.Data.Log.Infof("Authentication successful")
+
+	switch args.Name {
+	case RPC_START:
+		{
+			//func() *Reply { tmpReply = StartServer(args, reply); return tmpReply }()
+			tmpReply = StartServer(args, reply)
+			tmpReply.ProcessID = os.Getpid()
+		}
+	case RPC_RESTART:
+		{
+			func() *Reply { tmpReply = RestartServer(args, reply); return tmpReply }()
+		}
+	case RPC_STOP:
+		{
+			func() *Reply { tmpReply = StopServer(args, reply); return tmpReply }()
+		}
+	case RPC_STATUS:
+		{
+			log.Infof("Received RPC_STATUS cmd")
+			//var answer string
+			//answer += "Process name: " + serv.Data.ProcessName + "\n"
+
+			//func() *Reply { tmpReply = Status(args, reply); return tmpReply }()
+			tmpReply = Status(args, reply)
+			log.Infof("Finished Status.\n")
+
+		}
+	default:
+		{
+			log.Infof("None matched up. : / \n")
+		}
+	}
+
+	log.Infof("%x : %s : %s : %s", args.Key, args.Name, args.Message, reply.Message)
+	reply = tmpReply
+	return nil
+}
+
+func receiveOrTimeout() {
+
+	timeOut = make(chan bool, 1)
+	defer close(timeOut)
+
+	timer := time.NewTimer(30 * time.Second)
+	defer timer.Stop()
+
+	select {
+	case <-timeOut:
+		log.Infof("Start signal received. Timeout canceled.")
+	case <-timer.C:
+		log.Warnf("Start signal not received before timeout. Closing.")
+		wg.Done()
+	}
 }

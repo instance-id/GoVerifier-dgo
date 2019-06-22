@@ -15,8 +15,8 @@ var log = Log
 type InvoiceDataAccessObject struct{}
 
 type UserPackagesDetail struct {
-	VerifiedUser `xorm:"extends"`
-	UserPackages `xorm:"extends"`
+	VerifiedUsers `xorm:"extends"`
+	UserPackages  `xorm:"extends"`
 }
 
 type Invoices struct {
@@ -91,7 +91,7 @@ func (i *InvoiceDataAccessObject) VerifyInvoice(invoiceNum string, assetChoice s
 	return true, msg, &asset
 }
 
-func (i *InvoiceDataAccessObject) AddInvoice(user *VerifiedUser, packages *UserPackages) (bool, string) {
+func (i *InvoiceDataAccessObject) AddInvoice(user *VerifiedUsers, packages *UserPackages) (bool, string) {
 	Log.Debugf("Username: %s", user.Username) // ---------------------------------------------------------------------------------------- TODO Remove
 
 	exists, err := Dba.Table(VerifiedUserDAO.TableName()).Where("username = ?", user.Username).Exist()

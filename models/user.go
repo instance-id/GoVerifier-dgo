@@ -8,7 +8,7 @@ import (
 type VerifiedUserDataAccessObject struct{}
 
 // --- User data container object -----------------------------------------------------------------
-type VerifiedUser struct {
+type VerifiedUsers struct {
 	Id       int64
 	Username string `xorm:"'username' not null index VARCHAR(50)"`
 	Email    string `xorm:"'email' VARCHAR(75)"`
@@ -23,15 +23,15 @@ func (d *VerifiedUserDataAccessObject) TableName() string {
 }
 
 // --- Create new user object --------------------------------------------------------------------
-func NewVerifiedUser(username string, email string) *VerifiedUser {
-	return &VerifiedUser{
+func NewVerifiedUser(username string, email string) *VerifiedUsers {
+	return &VerifiedUsers{
 		Username: username,
 		Email:    email,
 	}
 }
 
 // --- Add new user to database -------------------------------------------------------------------
-func (d *VerifiedUserDataAccessObject) AddUser(user *VerifiedUser, di di.Container) {
+func (d *VerifiedUserDataAccessObject) AddUser(user *VerifiedUsers, di di.Container) {
 	db := DatabaseAccessContainer(di)
 	_, err := db.Table(VerifiedUserDAO.TableName()).InsertOne(user)
 	LogFatalf("Unable to insert user", err)

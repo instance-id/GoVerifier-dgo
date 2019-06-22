@@ -32,7 +32,7 @@ func main() {
 	var port *string
 
 	useRPC := flag.Bool("rpc", false, "Run RPC Server for UI communication?")
-	port = flag.String("port", "4555", "Port for RPC commands")
+	port = flag.String("port", "14555", "Port for RPC commands")
 
 	flag.Parse()
 
@@ -56,16 +56,31 @@ func main() {
 	ErrCheck("error creating Bot session: ", err)
 
 	if *useRPC {
-		var server = ServerData{
+		/* var server = ServerData{
 			Port:     port,
 			Log:      log,
 			Verifier: verifierRun,
 			Phrase:   config.Discord.Guild,
 			Key:      config.System.Token[len(config.System.Token)-13:],
+		}*/
+
+		log.Infof("Starting in useRPC!")
+		var rpcServer = RpcServer{
+			Data: &ServerData{
+				Port:     port,
+				Log:      log,
+				Verifier: verifierRun,
+				Phrase:   config.Discord.Guild,
+				Key:      config.System.Token[len(config.System.Token)-13:],
+			},
 		}
-		RunServer(&server, log)
+		log.Infof("Running RunServer()")
+
+		RunServer(&rpcServer, log)
 
 	} else {
+		log.Warnf("NOT starting in useRPC!")
+
 		log.Infof("Initial setup complete")
 
 		defer verifierRun.Close()

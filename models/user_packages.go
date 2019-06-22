@@ -19,7 +19,7 @@ func (p *UserPackagesDataAccessObject) TableName() string {
 	return "user_packages"
 }
 
-func NewUserPackages(user *VerifiedUser, invoice string, packages string, purdate time.Time) *UserPackages {
+func NewUserPackages(user *VerifiedUsers, invoice string, packages string, purdate time.Time) *UserPackages {
 	return &UserPackages{
 		Id:       user.Id,
 		Username: user.Username,
