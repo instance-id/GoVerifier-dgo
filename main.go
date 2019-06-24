@@ -31,10 +31,17 @@ func main() {
 	var appContext appContext
 	var port *string
 
-	useRPC := flag.Bool("rpc", false, "Run RPC Server for UI communication?")
+	useRPC := flag.Bool("rpc", false, "Run RPC server for UI communication?")
 	port = flag.String("port", "14555", "Port for RPC commands")
-
 	flag.Parse()
+
+	if !*useRPC {
+		outPath := "./logs/verifier.log"
+		outPathLast := "./logs/verifierlastrun.log"
+		if err := os.Rename(outPath, outPathLast); err != nil {
+			log.Infof("Could not rotate log file")
+		}
+	}
 
 	log, app := DISetup()
 	defer app.Delete()
@@ -56,15 +63,8 @@ func main() {
 	ErrCheck("error creating Bot session: ", err)
 
 	if *useRPC {
-		/* var server = ServerData{
-			Port:     port,
-			Log:      log,
-			Verifier: verifierRun,
-			Phrase:   config.Discord.Guild,
-			Key:      config.System.Token[len(config.System.Token)-13:],
-		}*/
 
-		log.Infof("Starting in useRPC!")
+		log.Infof("Configuration import complete. Starting Verifier RPC server.")
 		var rpcServer = RpcServer{
 			Data: &ServerData{
 				Port:     port,
@@ -74,14 +74,12 @@ func main() {
 				Key:      config.System.Token[len(config.System.Token)-13:],
 			},
 		}
-		log.Infof("Running RunServer()")
 
 		RunServer(&rpcServer, log)
 
 	} else {
-		log.Warnf("NOT starting in useRPC!")
 
-		log.Infof("Initial setup complete")
+		log.Infof("Configuration import complete. Starting Verifier in standalone mode.")
 
 		defer verifierRun.Close()
 		err = verifierRun.Start()

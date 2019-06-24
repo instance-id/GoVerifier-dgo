@@ -38,8 +38,6 @@ func (v *Verifier) VerifierRun(s *appconfig.MainSettings, di di.Container) (*Con
 			cmdroutes.NewSubRoute(di),
 			cmdroutes.NewUser(di),
 			cmdroutes.NewDirectMessage(),
-			cmdroutes.NewAvatar(),
-			cmdroutes.NewPing(),
 			cmdroutes.NewListRoles(di),
 			cmdroutes.NewDbSetup(di),
 			cmdroutes.NewDbUpdate(di),

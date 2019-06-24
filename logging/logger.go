@@ -18,13 +18,13 @@ func NewLogger(env Environment, service, discordWebhookURL string, client *http.
 			return nil, err
 		}
 	case DevelopmentEnvironment:
-		outpath := "./logs/verifier.log"
+		outPath := "./logs/verifier.log"
 
 		config := zap.NewDevelopmentConfig()
-		config.OutputPaths = []string{outpath}
-		config.ErrorOutputPaths = []string{outpath}
-		logger, err := config.Build()
+		config.OutputPaths = []string{outPath}
+		config.ErrorOutputPaths = []string{outPath}
 
+		logger, err := config.Build()
 		if err != nil {
 			return nil, err
 		}

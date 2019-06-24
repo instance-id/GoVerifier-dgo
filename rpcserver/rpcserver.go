@@ -67,24 +67,25 @@ type Args struct {
 	Ctx     map[string]interface{}
 }
 
-func Status(args Args, res *Reply) *Reply {
-	var tmpReply = new(Reply)
+func Status(reply *Reply) *Reply {
 	log.Infof("Checking RPC_STATUS")
 
 	if serv.Data.VerifierRunning {
 		log.Infof("Verifier UI checking status")
-		tmpReply.Message = fmt.Sprintf("Starting Verfier server")
-		tmpReply.RunCheck = serv.Data.VerifierRunning
-		tmpReply.RPCCheck = serv.Data.RpcRunning
-		return tmpReply
+		reply.Message = fmt.Sprintf("Verifier running")
+		reply.RunCheck = serv.Data.VerifierRunning
+		reply.RPCCheck = serv.Data.RpcRunning
+		reply.ProcessID = os.Getpid()
 
-		//res.ProcessID = serv.Data.svr.
+		return reply
+
 	} else {
 		log.Infof("Verifier not running")
-		tmpReply.Message = "Verifier not running"
-		tmpReply.RunCheck = false
-		tmpReply.RPCCheck = true
-		return tmpReply
+		reply.Message = "Verifier not running"
+		reply.RunCheck = false
+		reply.RPCCheck = true
+
+		return reply
 	}
 }
 
@@ -92,7 +93,7 @@ func StartServer(args Args, res *Reply) *Reply {
 	res.Message = fmt.Sprintf("Starting Verfier server")
 	go Run()
 
-	log.Infof("Starting Verifier server: After Run()")
+	log.Infof("Starting Verifier server")
 	return res
 }
 
@@ -116,6 +117,8 @@ func RestartServer(args Args, res *Reply) *Reply {
 
 func StopServer(args Args, res *Reply) *Reply {
 	res.Message = fmt.Sprintf("Shut down of Verifier initiated")
+	res.RunCheck = false
+	res.RPCCheck = false
 	go delayedOsExit()
 	return res
 }
@@ -129,10 +132,12 @@ func RunServer(r *RpcServer, Logs *zap.SugaredLogger) {
 	go rpcServer()
 	runtime.Gosched()
 	log.Infof("RPC Server started. Waiting for Verifier start signal.")
+	log.Infof("Initiated 30 second application timeout if not received.")
+
 	serv.Data.RpcRunning = true
 	receiveOrTimeout()
 	wg.Wait()
-	log.Infof("Canceled via RPC")
+	log.Infof("Shutdown Initiated")
 	serv.Data.VerifierRunning = false
 	serv.Data.RpcRunning = false
 
@@ -148,7 +153,6 @@ func rpcServer() {
 	if err != nil {
 		panic(err)
 	}
-
 }
 
 func Run() {
@@ -192,14 +196,13 @@ func delayedOsExit() {
 
 func (s *Server) RpcRequestHandler(ctx context.Context, args Args, reply *Reply) error {
 	fmt.Printf("%x : %s : %s: %s \n", args.Key, args.Name, args.Message, reply.Message)
-	var tmpReply *Reply
 
 	clientConn = ctx.Value(server.RemoteConnContextKey).(net.Conn)
-	log.Infof(" Client IP: %s \n ", clientConn.RemoteAddr().String())
+	log.Infof(" Client IP: %s ", clientConn.RemoteAddr().String())
 
 	if !DecryptKey(args.Key) {
-		log.Warnf("Failed Authentication attempt from: %s ", clientConn.RemoteAddr().String())
-		args.Message = fmt.Sprintf("Could not Authenticate from: %s", clientConn.RemoteAddr().String())
+		log.Infof("Failed Authentication attempt from: %s ", clientConn.RemoteAddr().String())
+		reply.Message = fmt.Sprintf("Could not Authenticate from: %s", clientConn.RemoteAddr().String())
 		return nil
 	}
 	serv.Data.Log.Infof("Authentication successful")
@@ -207,38 +210,33 @@ func (s *Server) RpcRequestHandler(ctx context.Context, args Args, reply *Reply)
 	switch args.Name {
 	case RPC_START:
 		{
-			//func() *Reply { tmpReply = StartServer(args, reply); return tmpReply }()
-			tmpReply = StartServer(args, reply)
-			tmpReply.ProcessID = os.Getpid()
+			reply = StartServer(args, reply)
+			reply.ProcessID = os.Getpid()
+			return nil
 		}
 	case RPC_RESTART:
 		{
-			func() *Reply { tmpReply = RestartServer(args, reply); return tmpReply }()
+			reply = RestartServer(args, reply)
+			return nil
 		}
 	case RPC_STOP:
 		{
-			func() *Reply { tmpReply = StopServer(args, reply); return tmpReply }()
+			reply = StopServer(args, reply)
+			return nil
 		}
 	case RPC_STATUS:
 		{
 			log.Infof("Received RPC_STATUS cmd")
-			//var answer string
-			//answer += "Process name: " + serv.Data.ProcessName + "\n"
-
-			//func() *Reply { tmpReply = Status(args, reply); return tmpReply }()
-			tmpReply = Status(args, reply)
-			log.Infof("Finished Status.\n")
-
+			reply = Status(reply)
+			log.Infof("Finished Status. \n")
+			return nil
 		}
 	default:
 		{
 			log.Infof("None matched up. : / \n")
+			return nil
 		}
 	}
-
-	log.Infof("%x : %s : %s : %s", args.Key, args.Name, args.Message, reply.Message)
-	reply = tmpReply
-	return nil
 }
 
 func receiveOrTimeout() {

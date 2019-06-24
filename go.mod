@@ -14,6 +14,7 @@ require (
 	github.com/go-xorm/builder v0.3.4 // indirect
 	github.com/go-xorm/xorm v0.7.1
 	github.com/golang/mock v1.3.1 // indirect
+	github.com/google/gopacket v1.1.17 // indirect
 	github.com/gookit/config/v2 v2.0.6
 	github.com/gopherjs/gopherjs v0.0.0-20190430165422-3e4dfb77656c // indirect
 	github.com/gosexy/dig v0.0.0-20180314222429-58395a757ac0
@@ -36,7 +37,9 @@ require (
 	github.com/parnurzeal/gorequest v0.2.15
 	github.com/sarulabs/di/v2 v2.1.0
 	github.com/sirupsen/logrus v1.4.2
+	github.com/smallnest/ringbuffer v0.0.0-20190604055735-67fbaa32c05d // indirect
 	github.com/smallnest/rpcx v0.0.0-20190619071203-435946a6b212
+	github.com/smallnest/rpcxdump v0.0.0-20190620013553-22c65ec8c8b1 // indirect
 	github.com/smartystreets/assertions v1.0.0 // indirect
 	github.com/smartystreets/goconvey v0.0.0-20190330032615-68dc04aab96a // indirect
 	github.com/tidwall/gjson v1.2.1
