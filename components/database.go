@@ -93,5 +93,3 @@ func DetermineConnection(d *appconfig.DbSettings) string {
 	}
 	return connString
 }
-
-// xorm reverse mysql instance:!WE2er#$@tcp(instance.id:3306)/verify?charset=utf8 templates/goxorm
